@@ -1,0 +1,38 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: mcpdoctor
+      POSTGRES_USER: mcpdoctor
+      POSTGRES_PASSWORD: mcpdoctor
+    ports:
+      - "5435:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mcpdoctor"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: ./api
+    ports:
+      - "3020:3020"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://mcpdoctor:mcpdoctor@postgres:5432/mcpdoctor
+      PORT: "3020"
+      NODE_ENV: development
+      # Stripe (set via .env or override)
+      STRIPE_SECRET_KEY: ""
+      STRIPE_WEBHOOK_SECRET: ""
+      STRIPE_STARTER_PRICE_ID: ""
+      STRIPE_PRO_PRICE_ID: ""
+      STRIPE_TEAM_PRICE_ID: ""
+    restart: unless-stopped
+
+volumes:
+  pgdata:

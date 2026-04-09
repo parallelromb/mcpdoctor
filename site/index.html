@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MCP Doctor — Compliance testing for MCP servers</title>
+  <meta name="description" content="Free, open-source compliance testing for MCP servers. 50+ automated checks against the official spec. Get your grade. Ship with confidence." />
+  <meta name="keywords" content="MCP server testing, MCP compliance, Model Context Protocol, MCP security, MCP Doctor" />
+  <meta property="og:title" content="MCP Doctor — Compliance testing for MCP servers" />
+  <meta property="og:description" content="Free, open-source compliance testing for MCP servers. 50+ checks. A-F grading. CI/CD ready." />
+  <meta property="og:url" content="https://mcpdoctor.ai" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@parallelromb" />
+  <link rel="canonical" href="https://mcpdoctor.ai" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "name": "MCP Doctor",
+        "url": "https://mcpdoctor.ai",
+        "email": "sri@mcpdoctor.ai",
+        "sameAs": ["https://github.com/mcpdoctor", "https://twitter.com/parallelromb"],
+        "founder": { "@type": "Person", "name": "Sri" }
+      },
+      {
+        "@type": "SoftwareApplication",
+        "name": "MCP Doctor",
+        "url": "https://mcpdoctor.ai",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Web, CLI",
+        "description": "Free, open-source compliance testing for MCP servers."
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f8f9fc;
+      --bg-card: rgba(255,255,255,0.72);
+      --bg-glass: rgba(255,255,255,0.55);
+      --bg-code: #f5f5f7;
+      --bg-dark: #1d1d1f;
+      --text: #1d1d1f;
+      --text-secondary: #6e6e73;
+      --text-tertiary: #aeaeb2;
+      --border: rgba(0,0,0,0.06);
+      --border-glass: rgba(255,255,255,0.6);
+      --accent: #4f6ef7;
+      --accent-light: #eef1ff;
+      --accent-glow: rgba(79,110,247,0.15);
+      --green: #22c55e;
+      --green-light: #ecfdf5;
+      --red: #ef4444;
+      --red-light: #fef2f2;
+      --orange: #f59e0b;
+      --orange-light: #fffbeb;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+      --shadow-lg: 0 12px 48px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+      --shadow-xl: 0 24px 80px rgba(0,0,0,0.1), 0 4px 16px rgba(0,0,0,0.05);
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font);
+      color: var(--text);
+      background: var(--bg);
+      background-image:
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(79,110,247,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 50%, rgba(34,197,94,0.04) 0%, transparent 50%),
+        radial-gradient(ellipse 50% 40% at 20% 80%, rgba(245,158,11,0.04) 0%, transparent 50%);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    ::selection { background: var(--accent-light); }
+
+    .container { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: 56px;
+      background: rgba(248,249,252,0.72);
+      backdrop-filter: blur(24px) saturate(1.4);
+      -webkit-backdrop-filter: blur(24px) saturate(1.4);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 1px 0 rgba(255,255,255,0.5);
+    }
+    .nav-inner {
+      max-width: 1080px; margin: 0 auto; padding: 0 24px;
+      height: 100%; display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo {
+      font-weight: 600; font-size: 15px; color: var(--text);
+      text-decoration: none; display: flex; align-items: center; gap: 8px;
+      letter-spacing: -0.02em;
+    }
+    .nav-logo svg { flex-shrink: 0; }
+    .nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
+    .nav-links a {
+      font-size: 14px; color: var(--text-secondary); text-decoration: none;
+      transition: color 0.15s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      font-size: 13px; font-weight: 500; color: #fff;
+      background: var(--accent); padding: 7px 16px; border-radius: 980px;
+      text-decoration: none; transition: all 0.2s;
+      box-shadow: 0 2px 8px var(--accent-glow);
+    }
+    .nav-cta:hover { box-shadow: 0 4px 16px rgba(79,110,247,0.25); transform: translateY(-1px); }
+
+    /* ─── HERO ─── */
+    .hero {
+      padding: 140px 24px 100px;
+      text-align: center;
+    }
+    .hero-eyebrow {
+      font-size: 14px; font-weight: 500; color: var(--accent);
+      margin-bottom: 16px; letter-spacing: -0.01em;
+    }
+    .hero h1 {
+      font-size: clamp(40px, 6vw, 72px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.05;
+      color: var(--text);
+      margin-bottom: 20px;
+    }
+    .hero p {
+      font-size: 19px;
+      color: var(--text-secondary);
+      max-width: 580px;
+      margin: 0 auto 40px;
+      line-height: 1.6;
+    }
+    .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--accent); color: #fff;
+      font-size: 15px; font-weight: 500; font-family: var(--font);
+      padding: 12px 28px; border-radius: 980px;
+      text-decoration: none; border: none; cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 16px var(--accent-glow);
+    }
+    .btn-primary:hover { box-shadow: 0 8px 32px rgba(79,110,247,0.3); transform: translateY(-1px); }
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--bg-glass); color: var(--text);
+      font-size: 15px; font-weight: 500; font-family: var(--font);
+      padding: 12px 28px; border-radius: 980px;
+      text-decoration: none; border: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: all 0.2s;
+      box-shadow: var(--shadow-sm);
+    }
+    .btn-secondary:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); background: rgba(255,255,255,0.8); }
+
+    /* ─── TERMINAL DEMO ─── */
+    .terminal-wrap {
+      max-width: 640px; margin: 56px auto 0;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(0,0,0,0.1);
+      background: var(--bg-dark);
+      box-shadow: var(--shadow-xl), 0 0 0 1px rgba(255,255,255,0.05) inset;
+    }
+    .terminal-bar {
+      display: flex; align-items: center; gap: 6px;
+      padding: 12px 16px;
+      background: #2d2d2f;
+    }
+    .terminal-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .terminal-dot.r { background: #ff5f57; }
+    .terminal-dot.y { background: #febc2e; }
+    .terminal-dot.g { background: #28c840; }
+    .terminal-body {
+      padding: 20px;
+      font-family: var(--mono); font-size: 13px;
+      line-height: 1.9; color: #d1d1d6;
+      min-height: 220px;
+    }
+    .t-line { opacity: 0; }
+    .t-cmd { color: #86868b; }
+    .t-cmd::before { content: '$ '; color: #86868b; }
+    .t-pass { color: var(--green); }
+    .t-pass::before { content: '  '; }
+    .t-fail { color: var(--red); }
+    .t-fail::before { content: '  '; }
+    .t-dim { color: #48484a; }
+    .t-score { color: #f5f5f7; font-weight: 500; }
+    .t-ms { float: right; color: #48484a; font-size: 11px; }
+    .t-cursor { display: inline-block; width: 7px; height: 13px; background: #86868b; animation: blink 1s step-end infinite; vertical-align: middle; }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* ─── SECTION LAYOUT ─── */
+    section { padding: 100px 24px; }
+    section + section { border-top: 1px solid rgba(0,0,0,0.04); }
+    .section-eyebrow {
+      font-size: 13px; font-weight: 600; color: var(--accent);
+      text-transform: uppercase; letter-spacing: 0.04em;
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 700; letter-spacing: -0.03em;
+      line-height: 1.1; margin-bottom: 16px;
+    }
+    .section-desc {
+      font-size: 17px; color: var(--text-secondary);
+      max-width: 560px; line-height: 1.6;
+    }
+    .section-header { margin-bottom: 56px; }
+    .section-header.center { text-align: center; }
+    .section-header.center .section-desc { margin: 0 auto; }
+
+    /* ─── STATS ROW ─── */
+    .stats-row {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+      background: var(--border); border-radius: 16px; overflow: hidden;
+      margin-bottom: 64px;
+      box-shadow: var(--shadow-md);
+    }
+    .stat-cell {
+      background: rgba(255,255,255,0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 32px 24px; text-align: center;
+    }
+    .stat-cell .num {
+      font-size: 36px; font-weight: 700; letter-spacing: -0.03em;
+      font-variant-numeric: tabular-nums;
+    }
+    .stat-cell .num.blue { color: var(--accent); }
+    .stat-cell .num.green { color: var(--green); }
+    .stat-cell .num.red { color: var(--red); }
+    .stat-cell .num.orange { color: var(--orange); }
+    .stat-cell .label { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+    .stat-cell .source { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
+
+    /* ─── FEATURE CARDS ─── */
+    .features-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+    }
+    .feature-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 28px;
+      transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: var(--shadow-sm);
+    }
+    .feature-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-4px); border-color: rgba(79,110,247,0.15); }
+    .feature-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; margin-bottom: 20px;
+    }
+    .feature-icon.blue { background: var(--accent-light); box-shadow: 0 2px 8px rgba(79,110,247,0.1); }
+    .feature-icon.green { background: var(--green-light); box-shadow: 0 2px 8px rgba(34,197,94,0.1); }
+    .feature-icon.red { background: var(--red-light); box-shadow: 0 2px 8px rgba(239,68,68,0.1); }
+    .feature-icon.orange { background: var(--orange-light); box-shadow: 0 2px 8px rgba(245,158,11,0.1); }
+    .feature-card h3 {
+      font-size: 16px; font-weight: 600; margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+    .feature-card p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+
+    /* ─── CODE BLOCK ─── */
+    .code-block {
+      background: var(--bg-dark); color: #d1d1d6;
+      border-radius: 16px; padding: 24px;
+      font-family: var(--mono); font-size: 13px; line-height: 1.8;
+      overflow-x: auto;
+      border: 1px solid rgba(0,0,0,0.1);
+      box-shadow: var(--shadow-xl);
+    }
+    .code-block .ck { color: #ff7b72; }
+    .code-block .cv { color: #79c0ff; }
+    .code-block .cs { color: #a5d6ff; }
+    .code-block .cc { color: #484848; }
+
+    /* ─── TWO-COL LAYOUT ─── */
+    .two-col {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 64px; align-items: center;
+    }
+    .two-col.reverse { direction: rtl; }
+    .two-col.reverse > * { direction: ltr; }
+
+    /* ─── IDE LOGOS ─── */
+    .ide-row {
+      display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
+    }
+    .ide-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border-radius: 980px;
+      background: rgba(255,255,255,0.6);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      font-size: 13px; color: var(--text-secondary); font-weight: 500;
+      transition: all 0.2s;
+      box-shadow: var(--shadow-sm);
+    }
+    .ide-pill:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); background: rgba(255,255,255,0.85); }
+
+    /* ─── SECURITY STATS ─── */
+    .breach-list { display: flex; flex-direction: column; gap: 16px; }
+    .breach-item {
+      display: flex; gap: 16px; align-items: flex-start;
+      padding: 20px;
+      background: rgba(255,255,255,0.6);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border); border-radius: 16px;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s;
+    }
+    .breach-item:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .breach-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--red); flex-shrink: 0; margin-top: 6px;
+    }
+    .breach-item h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .breach-item p { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+
+    /* ─── TRUST SECTION ─── */
+    .trust-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
+    }
+    .trust-card {
+      text-align: center; padding: 28px 20px;
+      background: rgba(255,255,255,0.6);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border); border-radius: 16px;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+    }
+    .trust-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-3px); }
+    .trust-card h4 { font-size: 14px; font-weight: 600; margin: 12px 0 6px; }
+    .trust-card p { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+    .trust-icon {
+      width: 44px; height: 44px; border-radius: 10px;
+      background: var(--accent-light);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 20px;
+    }
+
+    /* ─── BADGE PREVIEW ─── */
+    .badge-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 32px; }
+    .badge {
+      display: inline-flex; border-radius: 4px; overflow: hidden;
+      font-family: var(--mono); font-size: 12px; font-weight: 500;
+    }
+    .badge .bl { padding: 4px 8px; background: #555; color: #fff; }
+    .badge .br { padding: 4px 8px; }
+    .badge.a .br { background: var(--green); color: #fff; }
+    .badge.b .br { background: var(--accent); color: #fff; }
+    .badge.f .br { background: var(--red); color: #fff; }
+
+    /* ─── PRICING ─── */
+    .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .price-card {
+      background: rgba(255,255,255,0.65);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border); border-radius: 16px;
+      padding: 32px 28px;
+      transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: var(--shadow-sm);
+    }
+    .price-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-4px); }
+    .price-card.featured {
+      border-color: var(--accent); border-width: 2px;
+      background: rgba(255,255,255,0.85);
+      box-shadow: var(--shadow-md), 0 0 0 1px var(--accent-glow);
+    }
+    .price-name {
+      font-size: 13px; font-weight: 600; color: var(--text-secondary);
+      text-transform: uppercase; letter-spacing: 0.04em;
+      margin-bottom: 16px;
+    }
+    .price-amount {
+      font-size: 40px; font-weight: 700; letter-spacing: -0.04em;
+    }
+    .price-period { font-size: 14px; color: var(--text-secondary); font-weight: 400; }
+    .price-desc { font-size: 14px; color: var(--text-secondary); margin: 12px 0 20px; }
+    .price-features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+    .price-features li {
+      font-size: 14px; color: var(--text-secondary);
+      padding-left: 20px; position: relative;
+    }
+    .price-features li::before {
+      content: ''; position: absolute; left: 0; top: 7px;
+      width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+    }
+    .price-cta {
+      display: block; width: 100%; padding: 10px;
+      text-align: center; border-radius: 8px;
+      font-size: 14px; font-weight: 500;
+      border: 1px solid var(--border);
+      color: var(--text-secondary); background: transparent;
+    }
+    .price-card.featured .price-cta {
+      background: var(--accent); color: #fff; border-color: var(--accent);
+      box-shadow: 0 2px 8px var(--accent-glow);
+    }
+
+    /* ─── WAITLIST ─── */
+    .waitlist-section {
+      padding: 120px 24px;
+      text-align: center;
+      background: rgba(255,255,255,0.5);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+    }
+    .waitlist-form {
+      display: flex; gap: 8px;
+      max-width: 420px; margin: 32px auto 0;
+    }
+    .waitlist-input {
+      flex: 1; padding: 12px 16px;
+      border: 1px solid var(--border); border-radius: 8px;
+      font-family: var(--font); font-size: 14px;
+      outline: none; background: var(--bg);
+      transition: border-color 0.15s;
+    }
+    .waitlist-input:focus { border-color: var(--accent); }
+    .waitlist-input::placeholder { color: var(--text-tertiary); }
+    .waitlist-submit {
+      padding: 12px 20px; border-radius: 8px;
+      background: var(--accent); color: #fff;
+      font-family: var(--font); font-size: 14px; font-weight: 500;
+      border: none; cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      box-shadow: 0 2px 8px var(--accent-glow);
+    }
+    .waitlist-submit:hover { box-shadow: 0 4px 16px rgba(79,110,247,0.3); transform: translateY(-1px); }
+    .waitlist-success {
+      display: none; max-width: 420px; margin: 16px auto 0;
+      padding: 12px 20px; border-radius: 8px;
+      background: var(--green-light); color: var(--green);
+      font-size: 14px;
+    }
+    .waitlist-count { font-size: 13px; color: var(--text-tertiary); margin-top: 12px; }
+
+    /* ─── FOOTER ─── */
+    footer {
+      padding: 40px 24px;
+      border-top: 1px solid var(--border);
+    }
+    .footer-inner {
+      max-width: 1080px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .footer-left { font-size: 13px; color: var(--text-tertiary); }
+    .footer-left a { color: var(--text-secondary); text-decoration: none; }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a { font-size: 13px; color: var(--text-secondary); text-decoration: none; }
+    .footer-links a:hover { color: var(--text); }
+
+    /* ─── GSAP ─── */
+    .reveal { opacity: 0; transform: translateY(20px); }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 900px) {
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .features-grid { grid-template-columns: 1fr; max-width: 480px; margin: 0 auto; }
+      .two-col { grid-template-columns: 1fr; gap: 40px; }
+      .two-col.reverse { direction: ltr; }
+      .trust-grid { grid-template-columns: repeat(2, 1fr); }
+      .pricing-grid { grid-template-columns: 1fr; max-width: 400px; margin: 0 auto; }
+    }
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      .trust-grid { grid-template-columns: 1fr; }
+      .hero-actions { flex-direction: column; align-items: center; }
+      .waitlist-form { flex-direction: column; }
+      .footer-inner { flex-direction: column; gap: 16px; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M2 10 L5.5 5 L9 12 L12.5 3 L16 10 L18 8" stroke="#0066cc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="18" cy="8" r="2" fill="#34a853"/>
+      </svg>
+      MCP Doctor
+    </a>
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#security">Security</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+    </ul>
+    <a href="https://github.com/parallelromb/mcpdoctor" class="nav-cta" target="_blank">GitHub</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <p class="hero-eyebrow reveal">Free and open-source</p>
+  <h1 class="reveal">The health check your<br>MCP servers need.</h1>
+  <p class="reveal">50+ automated compliance checks against the official MCP specification. Get a grade, fix what matters, ship with confidence.</p>
+  <div class="hero-actions reveal">
+    <a href="#install" class="btn-primary">Install free — npx mcpdoctor</a>
+    <a href="#features" class="btn-secondary">Learn more</a>
+  </div>
+
+  <div class="terminal-wrap reveal" id="terminal">
+    <div class="terminal-bar">
+      <span class="terminal-dot r"></span>
+      <span class="terminal-dot y"></span>
+      <span class="terminal-dot g"></span>
+    </div>
+    <div class="terminal-body">
+      <div class="t-line t-cmd">mcpdoctor test my-server --transport stdio</div>
+      <div class="t-line t-dim" style="font-style:italic;color:#86868b;">Running 52 compliance checks...</div>
+      <div class="t-line t-pass">&#10003; initialize handshake <span class="t-ms">12ms</span></div>
+      <div class="t-line t-pass">&#10003; tool discovery <span class="t-ms">8ms</span></div>
+      <div class="t-line t-pass">&#10003; resource listing <span class="t-ms">15ms</span></div>
+      <div class="t-line t-pass">&#10003; prompt templates <span class="t-ms">6ms</span></div>
+      <div class="t-line t-fail">&#10007; error handling (timeout) <span class="t-ms" style="color:var(--red)">5003ms</span></div>
+      <div class="t-line t-pass">&#10003; cancellation support <span class="t-ms">22ms</span></div>
+      <div class="t-line t-dim">&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</div>
+      <div class="t-line t-score">Score: <span style="color:#34a853">94/100</span> (A)</div>
+      <div class="t-line" style="color:#86868b"><span style="color:#34a853">51 passed</span> &middot; <span style="color:#ea4335">1 failed</span> &middot; 0 skipped <span class="t-cursor"></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ECOSYSTEM STATS -->
+<section id="ecosystem">
+  <div class="container">
+    <div class="section-header center">
+      <p class="section-eyebrow reveal">The ecosystem</p>
+      <h2 class="section-title reveal">MCP is production infrastructure.</h2>
+      <p class="section-desc reveal">Not a toy protocol. The largest companies in tech are building on it.</p>
+    </div>
+    <div class="stats-row reveal">
+      <div class="stat-cell">
+        <div class="num blue">97M+</div>
+        <div class="label">SDK downloads / month</div>
+        <div class="source">TS + Python, Mar 2026</div>
+      </div>
+      <div class="stat-cell">
+        <div class="num green">16,000+</div>
+        <div class="label">Public MCP servers</div>
+        <div class="source">Up from 714 in Jan 2025</div>
+      </div>
+      <div class="stat-cell">
+        <div class="num orange">66%</div>
+        <div class="label">Have security findings</div>
+        <div class="source">Unit42, 2026</div>
+      </div>
+      <div class="stat-cell">
+        <div class="num red">30+</div>
+        <div class="label">CVEs in 2 months</div>
+        <div class="source">Jan-Feb 2026</div>
+      </div>
+    </div>
+
+    <div class="section-header center">
+      <p class="section-desc reveal">MCP is supported natively in every major AI development tool.</p>
+    </div>
+    <div class="ide-row reveal">
+      <span class="ide-pill">VS Code + Copilot</span>
+      <span class="ide-pill">Cursor</span>
+      <span class="ide-pill">Claude Code</span>
+      <span class="ide-pill">JetBrains IDEs</span>
+      <span class="ide-pill">Windsurf</span>
+      <span class="ide-pill">Cline</span>
+      <span class="ide-pill">Continue.dev</span>
+      <span class="ide-pill">Docker Desktop</span>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="container">
+    <div class="section-header center">
+      <p class="section-eyebrow reveal">What it does</p>
+      <h2 class="section-title reveal">Five things no other tool does.</h2>
+      <p class="section-desc reveal">Compliance, performance, monitoring, security, and CI/CD. One tool.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <div class="feature-icon blue">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M7 10l2 2 4-4" stroke="#0066cc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="3" width="14" height="14" rx="3" stroke="#0066cc" stroke-width="1.5"/></svg>
+        </div>
+        <h3>Compliance testing</h3>
+        <p>50+ automated checks against the official MCP spec. Handshake, tools, resources, prompts, error handling. A-F grading with category breakdown.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon orange">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 15l4-6 3 4 3-8 4 5" stroke="#f9ab00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>Performance benchmarking</h3>
+        <p>Latency percentiles (p50, p95, p99), concurrent connection testing, throughput measurement. Know exactly how your server performs under load.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon green">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="#34a853" stroke-width="1.5"/><circle cx="10" cy="10" r="2" fill="#34a853"/><path d="M10 3v2M10 15v2M3 10h2M15 10h2" stroke="#34a853" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <h3>Real-time monitoring</h3>
+        <p>Transparent proxy between client and server. Logs every tool call, resource access, and prompt. Alerts on error spikes before your users notice.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon red">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 3v6l4 2" stroke="#ea4335" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 17a7 7 0 110-14 7 7 0 010 14z" stroke="#ea4335" stroke-width="1.5"/></svg>
+        </div>
+        <h3>Security scanning</h3>
+        <p>Prompt injection detection, auth bypass testing, unsafe tool definition analysis. OWASP Top 10 for agentic applications, fully automated.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon blue">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 7h12M4 13h12" stroke="#0066cc" stroke-width="1.5" stroke-linecap="round"/><path d="M8 4l-4 3 4 3M12 10l4 3-4 3" stroke="#0066cc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>CI/CD integration</h3>
+        <p>GitHub Actions and GitLab CI support. Fail builds on compliance regression. Add a grade badge to your README. Ship every PR with confidence.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon green">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="3" stroke="#34a853" stroke-width="1.5"/><path d="M7 7h6M7 10h4M7 13h5" stroke="#34a853" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <h3>Open methodology</h3>
+        <p>Every check is open-source on GitHub. See exactly what your score means. Fork it. Audit it. Contribute. Transparency is how trust is built.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CI/CD EXAMPLE -->
+<section>
+  <div class="container">
+    <div class="two-col">
+      <div>
+        <p class="section-eyebrow reveal">CI/CD ready</p>
+        <h2 class="section-title reveal">Three lines in your pipeline.</h2>
+        <p class="section-desc reveal" style="margin-bottom:24px;">Add MCP Doctor to any CI pipeline. Fail the build if your server drops below an A. No more shipping broken protocol implementations.</p>
+        <div class="badge-row reveal" style="justify-content:flex-start;">
+          <div class="badge a"><span class="bl">mcp doctor</span><span class="br">A+ &middot; 98</span></div>
+          <div class="badge b"><span class="bl">mcp doctor</span><span class="br">B &middot; 82</span></div>
+          <div class="badge f"><span class="bl">mcp doctor</span><span class="br">F &middot; 34</span></div>
+        </div>
+      </div>
+      <div class="code-block reveal">
+        <span class="ck">name:</span> <span class="cv">MCP Doctor</span><br>
+        <span class="ck">on:</span> <span class="cv">[push, pull_request]</span><br>
+        <br>
+        <span class="ck">jobs:</span><br>
+        &nbsp;&nbsp;<span class="ck">test:</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="ck">runs-on:</span> <span class="cs">ubuntu-latest</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="ck">steps:</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <span class="ck">uses:</span> <span class="cs">actions/checkout@v4</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <span class="ck">uses:</span> <span class="cs">mcpdoctor/action@v1</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ck">with:</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ck">command:</span> <span class="cs">node server.js</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ck">min-score:</span> <span class="cv">90</span> <span class="cc"># fail below A</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECURITY -->
+<section id="security">
+  <div class="container">
+    <div class="two-col reverse">
+      <div>
+        <p class="section-eyebrow reveal">The problem</p>
+        <h2 class="section-title reveal">MCP servers are under attack. Most aren't ready.</h2>
+        <p class="section-desc reveal">Real vulnerabilities. Real breaches. The ecosystem is growing faster than its security practices.</p>
+      </div>
+      <div class="breach-list">
+        <div class="breach-item reveal">
+          <div class="breach-dot"></div>
+          <div>
+            <h4>Postmark MCP backdoor</h4>
+            <p>Compromised npm package BCC'd all outgoing emails to attacker-controlled addresses.</p>
+          </div>
+        </div>
+        <div class="breach-item reveal">
+          <div class="breach-dot"></div>
+          <div>
+            <h4>Supabase Cursor exploit</h4>
+            <p>SQL injection via support ticket, processed by AI agent. Exfiltrated tokens through the tool chain.</p>
+          </div>
+        </div>
+        <div class="breach-item reveal">
+          <div class="breach-dot"></div>
+          <div>
+            <h4>mcp-remote RCE (CVE-2025-6514)</h4>
+            <p>Malicious OAuth endpoint allowed remote code execution on developer machines.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST -->
+<section id="trust">
+  <div class="container">
+    <div class="section-header center">
+      <p class="section-eyebrow reveal">Why trust the grade</p>
+      <h2 class="section-title reveal">Open. Spec-aligned. Verifiable.</h2>
+      <p class="section-desc reveal">We don't make the rules. We automate the ones the MCP spec already defines.</p>
+    </div>
+    <div class="trust-grid">
+      <div class="trust-card reveal">
+        <div class="trust-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2v16M2 10h16" stroke="#0066cc" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <h4>Open source</h4>
+        <p>Every check is on GitHub. Fork, audit, contribute.</p>
+      </div>
+      <div class="trust-card reveal">
+        <div class="trust-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="#0066cc" stroke-width="1.5"/><path d="M7 10l2 2 4-4" stroke="#0066cc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h4>Spec-aligned</h4>
+        <p>Tests map to the official MCP specification, governed by the AAIF.</p>
+      </div>
+      <div class="trust-card reveal">
+        <div class="trust-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="#0066cc" stroke-width="1.5"/><path d="M10 6v4l3 2" stroke="#0066cc" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <h4>Free forever</h4>
+        <p>Core compliance scanning is free. Always. No account required.</p>
+      </div>
+      <div class="trust-card reveal">
+        <div class="trust-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 15V5a2 2 0 012-2h8a2 2 0 012 2v10M2 15h16" stroke="#0066cc" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <h4>Practitioners</h4>
+        <p>We build and ship MCP servers ourselves. We test what we know.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="container">
+    <div class="section-header center">
+      <p class="section-eyebrow reveal">Pricing</p>
+      <h2 class="section-title reveal">Free to scan. Pro when you need it.</h2>
+    </div>
+    <div class="pricing-grid">
+      <div class="price-card featured reveal">
+        <div class="price-name">Free</div>
+        <div class="price-amount">$0 <span class="price-period">forever</span></div>
+        <p class="price-desc">For every MCP server builder.</p>
+        <ul class="price-features">
+          <li>50+ compliance checks</li>
+          <li>A-F grading</li>
+          <li>README badge</li>
+          <li>CLI + GitHub Action</li>
+          <li>Unlimited scans</li>
+        </ul>
+        <a href="#install" class="price-cta">Install now — it's free</a>
+      </div>
+      <div class="price-card reveal">
+        <div class="price-name">Pro</div>
+        <div class="price-amount" style="font-size:28px;color:var(--text-secondary);">Coming soon</div>
+        <p class="price-desc">For teams in production.</p>
+        <ul class="price-features">
+          <li>Everything in Free</li>
+          <li>Real-time monitoring</li>
+          <li>Performance benchmarks</li>
+          <li>Alerts (Slack, email, webhook)</li>
+          <li>Log retention + dashboard</li>
+        </ul>
+        <div class="price-cta">Coming soon</div>
+      </div>
+      <div class="price-card reveal">
+        <div class="price-name">Enterprise</div>
+        <div class="price-amount" style="font-size:28px;color:var(--text-secondary);">Coming soon</div>
+        <p class="price-desc">For platform and security teams.</p>
+        <ul class="price-features">
+          <li>Everything in Pro</li>
+          <li>Security scanning</li>
+          <li>Custom rules</li>
+          <li>SSO + audit logs</li>
+          <li>Unlimited servers</li>
+        </ul>
+        <div class="price-cta">Coming soon</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INSTALL -->
+<section class="waitlist-section" id="install">
+  <div class="container" style="max-width:640px;">
+    <p class="section-eyebrow reveal">Get started</p>
+    <h2 class="section-title reveal" style="text-align:center;">Test your MCP server in 10 seconds.</h2>
+    <p class="section-desc reveal" style="text-align:center;margin:0 auto;">No signup. No API key. Just run the command.</p>
+
+    <div class="reveal" style="margin-top:32px;background:var(--bg-code,#1a1a2e);border-radius:12px;padding:24px 28px;font-family:'JetBrains Mono',monospace;font-size:15px;color:#e0e0e0;position:relative;border:1px solid rgba(255,255,255,0.06);">
+      <div style="color:#888;font-size:12px;margin-bottom:12px;">$ Terminal</div>
+      <div><span style="color:#4f6ef7;">npx</span> mcpdoctor test <span style="color:#7dd3a0;">"node my-server.js"</span></div>
+      <div style="margin-top:16px;color:#888;font-size:13px;"># Or test any MCP server command:</div>
+      <div><span style="color:#4f6ef7;">npx</span> mcpdoctor test <span style="color:#7dd3a0;">"npx @smara/mcp-server"</span></div>
+      <div style="margin-top:16px;color:#888;font-size:13px;"># Install globally:</div>
+      <div><span style="color:#4f6ef7;">npm</span> install -g mcpdoctor</div>
+    </div>
+
+    <div class="reveal" style="display:flex;gap:12px;justify-content:center;margin-top:24px;">
+      <a href="https://github.com/parallelromb/mcpdoctor" target="_blank" class="btn-primary" style="text-decoration:none;">View on GitHub</a>
+      <a href="https://www.npmjs.com/package/mcpdoctor" target="_blank" class="btn-primary" style="text-decoration:none;background:rgba(79,110,247,0.1);color:var(--accent);border:1px solid rgba(79,110,247,0.3);">npm package</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-left">
+      MCP Doctor &middot; A product by <a href="https://parallelromb.dev">parallelromb</a>
+    </div>
+    <div class="footer-links">
+      <a href="https://github.com/parallelromb/mcpdoctor">GitHub</a>
+      <a href="https://twitter.com/parallelromb">Twitter</a>
+      <a href="mailto:sri@mcpdoctor.ai">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<!-- GSAP -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+  gsap.registerPlugin(ScrollTrigger);
+
+  // Terminal
+  const lines = document.querySelectorAll('.t-line');
+  const tl = gsap.timeline({ delay: 1 });
+  lines.forEach((line, i) => {
+    tl.to(line, { opacity: 1, duration: 0.01 }, `+=${i < 2 ? 0.3 : 0.15}`);
+  });
+
+  // Hero - immediate
+  gsap.fromTo('.hero .reveal', { opacity: 0, y: 20 }, {
+    opacity: 1, y: 0, duration: 0.6, stagger: 0.1, ease: 'power2.out'
+  });
+
+  // Scroll reveals
+  document.querySelectorAll('.reveal').forEach(el => {
+    if (el.closest('.hero')) return;
+    gsap.fromTo(el, { opacity: 0, y: 20 }, {
+      opacity: 1, y: 0, duration: 0.5, ease: 'power2.out',
+      scrollTrigger: { trigger: el, start: 'top 90%' }
+    });
+  });
+</script>
+</body>
+</html>
