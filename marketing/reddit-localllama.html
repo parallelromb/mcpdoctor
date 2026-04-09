@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MCP Doctor - Free compliance testing CLI for MCP servers</title>
+  <meta property="og:title" content="MCP Doctor - Free compliance testing for MCP servers">
+  <meta property="og:description" content="50+ automated checks for any MCP server. Works with any client, any model. npx mcpdoctor.">
+  <meta property="og:url" content="https://mcpdoctor.ai">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0f;
+      color: #e0e0e8;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+      line-height: 1.7;
+      padding: 2rem 1rem;
+    }
+    .container { max-width: 720px; margin: 0 auto; }
+    .subreddit {
+      display: inline-block;
+      background: rgba(0, 212, 170, 0.1);
+      border: 1px solid rgba(0, 212, 170, 0.3);
+      color: #00d4aa;
+      padding: 0.25rem 0.75rem;
+      border-radius: 100px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 1.5rem;
+      line-height: 1.3;
+    }
+    h2 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #ffffff;
+      margin: 2rem 0 0.75rem;
+    }
+    p { margin-bottom: 1rem; color: #b0b0be; }
+    strong { color: #e0e0e8; }
+    a { color: #00d4aa; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul { margin: 0.5rem 0 1rem 1.5rem; color: #b0b0be; }
+    li { margin-bottom: 0.4rem; }
+    li strong { color: #e0e0e8; }
+    ol { margin: 0.5rem 0 1rem 1.5rem; color: #b0b0be; }
+    ol li { margin-bottom: 0.4rem; }
+    pre {
+      background: #12121a;
+      border: 1px solid #1e1e2e;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      overflow-x: auto;
+      margin: 1rem 0;
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+    code {
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      color: #c8c8d8;
+    }
+    .cmd { color: #00d4aa; }
+    .flag { color: #7aa2f7; }
+    .str { color: #e0af68; }
+    .dim { color: #565670; }
+    .footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #1e1e2e;
+      color: #6a6a7a;
+      font-size: 0.85rem;
+    }
+    .footer a { color: #00d4aa; }
+    .categories {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin: 1rem 0;
+    }
+    .cat-card {
+      background: #12121a;
+      border: 1px solid #1e1e2e;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+    }
+    .cat-card strong {
+      color: #00d4aa;
+      font-size: 0.9rem;
+    }
+    .cat-card p {
+      font-size: 0.82rem;
+      margin: 0.25rem 0 0;
+      color: #8a8a9a;
+    }
+    @media (max-width: 600px) {
+      body { padding: 1.5rem 1rem; }
+      h1 { font-size: 1.3rem; }
+      .categories { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="subreddit">r/LocalLLaMA</div>
+
+    <h1>MCP Doctor -- free compliance testing CLI for MCP servers (works with any client, any model)</h1>
+
+    <p>MCP (Model Context Protocol) is becoming the standard way to give LLMs access to tools and data. If you're running local MCP servers -- whether for Ollama, LM Studio, or any other local setup -- you want to make sure they actually implement the protocol correctly.</p>
+
+    <p>I built <strong>MCP Doctor</strong>: a free, open-source CLI that runs 50+ compliance checks against any MCP server and scores it A through F.</p>
+
+    <h2>What it tests</h2>
+
+    <div class="categories">
+      <div class="cat-card">
+        <strong>Protocol</strong>
+        <p>Initialize handshake, capability negotiation, JSON-RPC 2.0</p>
+      </div>
+      <div class="cat-card">
+        <strong>Tools</strong>
+        <p>tools/list, tools/call, schema validation, error handling</p>
+      </div>
+      <div class="cat-card">
+        <strong>Resources</strong>
+        <p>resources/list, resources/read, URI format</p>
+      </div>
+      <div class="cat-card">
+        <strong>Prompts</strong>
+        <p>prompts/list, prompts/get, argument handling</p>
+      </div>
+      <div class="cat-card">
+        <strong>Error Handling</strong>
+        <p>Proper error codes, graceful failure, timeouts</p>
+      </div>
+      <div class="cat-card">
+        <strong>Security</strong>
+        <p>Input sanitization, path traversal, resource boundaries</p>
+      </div>
+    </div>
+
+    <h2>Why this matters for local setups</h2>
+    <p>When you're running everything locally, debugging MCP failures is especially painful because:</p>
+    <ol>
+      <li>No server logs from a hosted provider to check</li>
+      <li>Different clients implement MCP slightly differently</li>
+      <li>Many community servers skip edge cases that only break with certain models</li>
+    </ol>
+    <p>MCP Doctor tells you exactly which parts of the spec your server handles correctly -- independent of any specific client or model.</p>
+
+    <h2>Usage</h2>
+    <pre><code><span class="dim"># Test a local stdio server</span>
+<span class="cmd">npx</span> mcpdoctor <span class="flag">--server</span> <span class="str">"node my-server.js"</span>
+<span class="cmd">npx</span> mcpdoctor <span class="flag">--server</span> <span class="str">"python server.py"</span>
+
+<span class="dim"># Test SSE transport</span>
+<span class="cmd">npx</span> mcpdoctor <span class="flag">--url</span> <span class="str">http://localhost:3000/mcp</span> <span class="flag">--transport</span> sse
+
+<span class="dim"># JSON output for scripting</span>
+<span class="cmd">npx</span> mcpdoctor <span class="flag">--server</span> <span class="str">"node server.js"</span> <span class="flag">--format</span> json</code></pre>
+
+    <p>No signup, no install (runs via npx), no telemetry. MIT licensed.</p>
+
+    <ul>
+      <li>GitHub: <a href="https://github.com/parallelromb/mcpdoctor">parallelromb/mcpdoctor</a></li>
+      <li>Website: <a href="https://mcpdoctor.ai">mcpdoctor.ai</a></li>
+    </ul>
+
+    <p>If you're building or using MCP servers locally, I'd love to know what checks would be most useful. Feedback welcome.</p>
+
+    <div class="footer">
+      <a href="https://github.com/parallelromb/mcpdoctor">GitHub</a> &middot;
+      <a href="https://mcpdoctor.ai">mcpdoctor.ai</a> &middot;
+      MIT License &middot; Free &amp; Open Source
+    </div>
+  </div>
+</body>
+</html>

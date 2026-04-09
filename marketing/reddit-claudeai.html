@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test your MCP servers before connecting them to Claude - MCP Doctor</title>
+  <meta property="og:title" content="Test your MCP servers before connecting them to Claude">
+  <meta property="og:description" content="Free CLI that runs 50+ compliance checks against any MCP server. Catch issues before Claude does.">
+  <meta property="og:url" content="https://mcpdoctor.ai">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0f;
+      color: #e0e0e8;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+      line-height: 1.7;
+      padding: 2rem 1rem;
+    }
+    .container { max-width: 720px; margin: 0 auto; }
+    .subreddit {
+      display: inline-block;
+      background: rgba(0, 212, 170, 0.1);
+      border: 1px solid rgba(0, 212, 170, 0.3);
+      color: #00d4aa;
+      padding: 0.25rem 0.75rem;
+      border-radius: 100px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 1.5rem;
+      line-height: 1.3;
+    }
+    h2 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #ffffff;
+      margin: 2rem 0 0.75rem;
+    }
+    p { margin-bottom: 1rem; color: #b0b0be; }
+    strong { color: #e0e0e8; }
+    a { color: #00d4aa; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul { margin: 0.5rem 0 1rem 1.5rem; color: #b0b0be; }
+    li { margin-bottom: 0.4rem; }
+    .terminal {
+      background: #12121a;
+      border: 1px solid #1e1e2e;
+      border-radius: 8px;
+      padding: 1.25rem;
+      overflow-x: auto;
+      margin: 1rem 0;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 0.82rem;
+      line-height: 1.7;
+    }
+    .terminal-header {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid #1e1e2e;
+    }
+    .terminal-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .dot-red { background: #ff5f57; }
+    .dot-yellow { background: #febc2e; }
+    .dot-green { background: #28c840; }
+    .prompt { color: #00d4aa; }
+    .dim { color: #565670; }
+    .pass { color: #00d4aa; }
+    .fail { color: #f7768e; }
+    .warn { color: #e0af68; }
+    .heading { color: #7aa2f7; font-weight: 600; }
+    .grade { color: #00d4aa; font-weight: 700; font-size: 1rem; }
+    pre {
+      background: #12121a;
+      border: 1px solid #1e1e2e;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      overflow-x: auto;
+      margin: 1rem 0;
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+    code {
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      color: #c8c8d8;
+    }
+    .inline-code {
+      background: #1a1a25;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.85em;
+      color: #00d4aa;
+    }
+    .cmd { color: #00d4aa; }
+    .flag { color: #7aa2f7; }
+    .str { color: #e0af68; }
+    .footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #1e1e2e;
+      color: #6a6a7a;
+      font-size: 0.85rem;
+    }
+    .footer a { color: #00d4aa; }
+    @media (max-width: 600px) {
+      body { padding: 1.5rem 1rem; }
+      h1 { font-size: 1.3rem; }
+      .terminal { font-size: 0.72rem; padding: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="subreddit">r/ClaudeAI</div>
+
+    <h1>Test your MCP servers before connecting them to Claude -- free CLI tool (<span class="inline-code">npx mcpdoctor</span>)</h1>
+
+    <p>If you're using MCP servers with Claude Code or Claude Desktop, you've probably hit silent failures -- tools that don't return the right format, servers that fail the initialize handshake, resources that break under edge cases.</p>
+
+    <p>I built <strong>MCP Doctor</strong> to fix this. It's a free, open-source CLI that runs 50+ compliance checks against any MCP server and scores it A through F.</p>
+
+    <h2>Quick demo</h2>
+
+    <div class="terminal">
+      <div class="terminal-header">
+        <div class="terminal-dot dot-red"></div>
+        <div class="terminal-dot dot-yellow"></div>
+        <div class="terminal-dot dot-green"></div>
+      </div>
+      <span class="prompt">$</span> npx mcpdoctor --server "node my-mcp-server.js"<br><br>
+      <span class="dim">  MCP Doctor v1.0.0</span><br>
+      <span class="dim">  Testing: node my-mcp-server.js</span><br>
+      <span class="dim">  Transport: stdio</span><br><br>
+      <span class="heading">  Protocol</span><br>
+      <span class="pass">    &#10003;</span> Initialize handshake completes<br>
+      <span class="pass">    &#10003;</span> Server returns valid capabilities<br>
+      <span class="pass">    &#10003;</span> JSON-RPC 2.0 message format<br>
+      <span class="pass">    &#10003;</span> Capability negotiation correct<br>
+      <span class="fail">    &#10007;</span> Shutdown handles gracefully <span class="warn">[WARN]</span><br><br>
+      <span class="heading">  Tools</span><br>
+      <span class="pass">    &#10003;</span> tools/list returns valid response<br>
+      <span class="pass">    &#10003;</span> Tool schemas are valid JSON Schema<br>
+      <span class="pass">    &#10003;</span> tools/call with valid input succeeds<br>
+      <span class="fail">    &#10007;</span> tools/call with invalid input returns proper error<br>
+      <span class="pass">    &#10003;</span> Tool descriptions present and non-empty<br><br>
+      <span class="heading">  Resources</span><br>
+      <span class="pass">    &#10003;</span> resources/list returns valid response<br>
+      <span class="pass">    &#10003;</span> resources/read returns content<br>
+      <span class="pass">    &#10003;</span> URI format follows spec<br><br>
+      <span class="heading">  Error Handling</span><br>
+      <span class="pass">    &#10003;</span> Invalid method returns MethodNotFound<br>
+      <span class="fail">    &#10007;</span> Malformed JSON-RPC returns ParseError<br>
+      <span class="pass">    &#10003;</span> Missing params handled gracefully<br><br>
+      <span class="heading">  Security</span><br>
+      <span class="pass">    &#10003;</span> Path traversal inputs rejected<br>
+      <span class="pass">    &#10003;</span> Input length limits enforced<br><br>
+      <span class="dim">  ─────────────────────────────────</span><br>
+      <span class="dim">  Score:</span> <strong style="color:#fff">47/53</strong> checks passed<br>
+      <span class="dim">  Grade:</span> <span class="grade">B+</span><br><br>
+      <span class="dim">  Protocol:</span> <span class="pass">A</span> &nbsp;|&nbsp; <span class="dim">Tools:</span> <span class="pass">B+</span> &nbsp;|&nbsp; <span class="dim">Resources:</span> <span class="pass">A</span><br>
+      <span class="dim">  Errors:</span> <span class="warn">B</span> &nbsp;|&nbsp; <span class="dim">Security:</span> <span class="pass">A</span>
+    </div>
+
+    <h2>Why this matters for Claude users</h2>
+
+    <p>Claude Code and Claude Desktop trust that MCP servers implement the protocol correctly. When they don't, you get:</p>
+    <ul>
+      <li>Silent tool failures that Claude retries endlessly</li>
+      <li>Malformed responses that confuse Claude's reasoning</li>
+      <li>Security issues in community servers you haven't audited</li>
+    </ul>
+    <p>MCP Doctor catches these before you connect the server.</p>
+
+    <h2>How to use</h2>
+    <pre><code><span class="cmd">npx</span> mcpdoctor <span class="flag">--server</span> <span class="str">"node my-server.js"</span>             <span class="dim"># stdio</span>
+<span class="cmd">npx</span> mcpdoctor <span class="flag">--url</span> <span class="str">http://localhost:3000/mcp</span> <span class="flag">--transport</span> sse  <span class="dim"># SSE</span>
+<span class="cmd">npx</span> mcpdoctor <span class="flag">--server</span> <span class="str">"node my-server.js"</span> <span class="flag">--format</span> json   <span class="dim"># CI/CD</span></code></pre>
+
+    <p>No install needed. MIT licensed. <a href="https://github.com/parallelromb/mcpdoctor">GitHub</a> | <a href="https://mcpdoctor.ai">mcpdoctor.ai</a></p>
+
+    <p>Feedback welcome -- what checks would be most useful for your Claude workflow?</p>
+
+    <div class="footer">
+      <a href="https://github.com/parallelromb/mcpdoctor">GitHub</a> &middot;
+      <a href="https://mcpdoctor.ai">mcpdoctor.ai</a> &middot;
+      MIT License &middot; Free &amp; Open Source
+    </div>
+  </div>
+</body>
+</html>

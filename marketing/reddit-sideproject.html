@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>I built a free CLI tool that tests MCP servers - MCP Doctor</title>
+  <meta property="og:title" content="MCP Doctor - Free protocol compliance testing for MCP servers">
+  <meta property="og:description" content="CLI tool that runs 50+ checks against any MCP server and grades it A-F. npx mcpdoctor.">
+  <meta property="og:url" content="https://mcpdoctor.ai">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0f;
+      color: #e0e0e8;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+      line-height: 1.7;
+      padding: 2rem 1rem;
+    }
+    .container { max-width: 720px; margin: 0 auto; }
+    .subreddit {
+      display: inline-block;
+      background: rgba(0, 212, 170, 0.1);
+      border: 1px solid rgba(0, 212, 170, 0.3);
+      color: #00d4aa;
+      padding: 0.25rem 0.75rem;
+      border-radius: 100px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 1.5rem;
+      line-height: 1.3;
+    }
+    h2 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #ffffff;
+      margin: 2rem 0 0.75rem;
+    }
+    p { margin-bottom: 1rem; color: #b0b0be; }
+    strong { color: #e0e0e8; }
+    a { color: #00d4aa; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul { margin: 0.5rem 0 1rem 1.5rem; color: #b0b0be; }
+    li { margin-bottom: 0.4rem; }
+    ol { margin: 0.5rem 0 1rem 1.5rem; color: #b0b0be; }
+    ol li { margin-bottom: 0.6rem; }
+    pre {
+      background: #12121a;
+      border: 1px solid #1e1e2e;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      overflow-x: auto;
+      margin: 1rem 0;
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+    code {
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      color: #c8c8d8;
+    }
+    .inline-code {
+      background: #1a1a25;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.85em;
+      color: #00d4aa;
+    }
+    .cmd { color: #00d4aa; }
+    .flag { color: #7aa2f7; }
+    .str { color: #e0af68; }
+    .highlight-box {
+      background: rgba(0, 212, 170, 0.05);
+      border-left: 3px solid #00d4aa;
+      padding: 1rem 1.25rem;
+      margin: 1.5rem 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .highlight-box p { margin-bottom: 0; }
+    .tech-stack {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 0.75rem 0;
+    }
+    .tech-tag {
+      background: #1a1a25;
+      border: 1px solid #2a2a3a;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      color: #8a8a9a;
+    }
+    .footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #1e1e2e;
+      color: #6a6a7a;
+      font-size: 0.85rem;
+    }
+    .footer a { color: #00d4aa; }
+    @media (max-width: 600px) {
+      body { padding: 1.5rem 1rem; }
+      h1 { font-size: 1.3rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="subreddit">r/SideProject</div>
+
+    <h1>I built a free CLI tool that tests MCP servers for protocol compliance -- MCP Doctor</h1>
+
+    <h2>The problem</h2>
+    <p>MCP (Model Context Protocol) is Anthropic's open standard for connecting AI tools to LLMs. It's grown to 97M+ SDK downloads/month and thousands of servers. But there's no standard way to test whether a server actually implements the protocol correctly.</p>
+    <p>I kept running into the same issues building my own MCP servers: silent failures, missing error codes, edge cases that only surfaced when a real AI client tried to use the tool. Every time I'd spend 30 minutes debugging what turned out to be a spec compliance issue.</p>
+
+    <h2>What I built</h2>
+    <p><strong>MCP Doctor</strong> -- a CLI you run with <span class="inline-code">npx mcpdoctor</span> that tests any MCP server against 50+ compliance checks across 6 categories:</p>
+    <ul>
+      <li>Protocol (handshake, capabilities, JSON-RPC)</li>
+      <li>Tools (list, call, schema validation)</li>
+      <li>Resources (list, read, URI format)</li>
+      <li>Prompts (list, get, arguments)</li>
+      <li>Error handling (error codes, graceful failure)</li>
+      <li>Security (input sanitization, path traversal)</li>
+    </ul>
+    <p>You get a per-category score and an overall letter grade (A through F).</p>
+
+    <h2>Tech stack</h2>
+    <div class="tech-stack">
+      <span class="tech-tag">TypeScript</span>
+      <span class="tech-tag">Node 18+</span>
+      <span class="tech-tag">npx</span>
+      <span class="tech-tag">stdio + SSE</span>
+      <span class="tech-tag">JSON output</span>
+      <span class="tech-tag">CI/CD ready</span>
+    </div>
+    <pre><code><span class="cmd">npx</span> mcpdoctor <span class="flag">--server</span> <span class="str">"node my-server.js"</span></code></pre>
+
+    <h2>What I learned</h2>
+    <ol>
+      <li><strong>The MCP spec has a lot of surface area.</strong> Writing test cases for every edge case took longer than building the test runner itself.</li>
+      <li><strong>Most community MCP servers fail at least a few checks.</strong> Error handling is the weakest category across the board -- most servers don't return proper JSON-RPC error codes.</li>
+      <li><strong>npx distribution is powerful.</strong> Zero install friction means people actually try it.</li>
+    </ol>
+
+    <div class="highlight-box">
+      <p>Free and open source (MIT). Looking for feedback on which checks matter most.</p>
+    </div>
+
+    <ul>
+      <li>GitHub: <a href="https://github.com/parallelromb/mcpdoctor">parallelromb/mcpdoctor</a></li>
+      <li>Website: <a href="https://mcpdoctor.ai">mcpdoctor.ai</a></li>
+    </ul>
+
+    <p>Would love to hear your thoughts. What would you want from a tool like this?</p>
+
+    <div class="footer">
+      <a href="https://github.com/parallelromb/mcpdoctor">GitHub</a> &middot;
+      <a href="https://mcpdoctor.ai">mcpdoctor.ai</a> &middot;
+      MIT License
+    </div>
+  </div>
+</body>
+</html>

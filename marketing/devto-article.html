@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How to Test Your MCP Server for Protocol Compliance - MCP Doctor</title>
+  <meta property="og:title" content="How to Test Your MCP Server for Protocol Compliance">
+  <meta property="og:description" content="A practical guide to testing MCP servers with MCP Doctor. 50+ automated checks for protocol, tools, resources, error handling, and security.">
+  <meta property="og:url" content="https://mcpdoctor.ai">
+  <meta property="og:type" content="article">
+  <meta name="twitter:card" content="summary_large_image">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0f;
+      color: #e0e0e8;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+      line-height: 1.8;
+      padding: 2rem 1rem;
+    }
+    .container { max-width: 760px; margin: 0 auto; }
+    .platform {
+      display: inline-block;
+      background: rgba(0, 212, 170, 0.1);
+      border: 1px solid rgba(0, 212, 170, 0.3);
+      color: #00d4aa;
+      padding: 0.25rem 0.75rem;
+      border-radius: 100px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+    .tags {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    .tag {
+      background: #1a1a25;
+      border: 1px solid #2a2a3a;
+      padding: 0.15rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      color: #7a7a8a;
+    }
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 0.75rem;
+      line-height: 1.3;
+    }
+    .subtitle {
+      font-size: 1.05rem;
+      color: #7a7a8a;
+      margin-bottom: 2rem;
+    }
+    h2 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 2.5rem 0 1rem;
+      padding-top: 1rem;
+    }
+    h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #00d4aa;
+      margin: 2rem 0 0.75rem;
+    }
+    p { margin-bottom: 1rem; color: #b0b0be; }
+    strong { color: #e0e0e8; }
+    a { color: #00d4aa; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul, ol { margin: 0.5rem 0 1rem 1.5rem; color: #b0b0be; }
+    li { margin-bottom: 0.4rem; }
+    .terminal {
+      background: #12121a;
+      border: 1px solid #1e1e2e;
+      border-radius: 8px;
+      padding: 1.25rem;
+      overflow-x: auto;
+      margin: 1rem 0 1.5rem;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 0.82rem;
+      line-height: 1.7;
+    }
+    .terminal-header {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid #1e1e2e;
+    }
+    .terminal-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-red { background: #ff5f57; }
+    .dot-yellow { background: #febc2e; }
+    .dot-green { background: #28c840; }
+    pre {
+      background: #12121a;
+      border: 1px solid #1e1e2e;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      overflow-x: auto;
+      margin: 1rem 0 1.5rem;
+      font-size: 0.82rem;
+      line-height: 1.6;
+    }
+    code {
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      color: #c8c8d8;
+    }
+    .inline-code {
+      background: #1a1a25;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.85em;
+      color: #00d4aa;
+    }
+    .prompt { color: #00d4aa; }
+    .dim { color: #565670; }
+    .pass { color: #00d4aa; }
+    .fail { color: #f7768e; }
+    .warn { color: #e0af68; }
+    .heading { color: #7aa2f7; font-weight: 600; }
+    .cmd { color: #00d4aa; }
+    .flag { color: #7aa2f7; }
+    .str { color: #e0af68; }
+    .kw { color: #bb9af7; }
+    .type { color: #2ac3de; }
+    .comment { color: #565670; }
+    .grade { color: #00d4aa; font-weight: 700; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0 1.5rem;
+    }
+    th, td {
+      padding: 0.6rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid #1e1e2e;
+    }
+    th {
+      color: #00d4aa;
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    td { color: #b0b0be; font-size: 0.9rem; }
+    td strong { color: #e0e0e8; }
+    .callout {
+      background: rgba(0, 212, 170, 0.05);
+      border-left: 3px solid #00d4aa;
+      padding: 1rem 1.25rem;
+      margin: 1.5rem 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .callout strong { color: #00d4aa; }
+    .callout p { margin-bottom: 0; }
+    .common-failures {
+      background: rgba(247, 118, 142, 0.05);
+      border-left: 3px solid #f7768e;
+      padding: 0.75rem 1.25rem;
+      margin: 0.75rem 0 1.5rem;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.9rem;
+    }
+    .common-failures strong { color: #f7768e; }
+    .divider {
+      border: none;
+      border-top: 1px solid #1e1e2e;
+      margin: 2.5rem 0;
+    }
+    .footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #1e1e2e;
+      color: #6a6a7a;
+      font-size: 0.85rem;
+    }
+    .footer a { color: #00d4aa; }
+    .cta-box {
+      background: #12121a;
+      border: 1px solid rgba(0, 212, 170, 0.2);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+      text-align: center;
+    }
+    .cta-box pre {
+      display: inline-block;
+      margin: 0.75rem auto;
+      text-align: left;
+    }
+    @media (max-width: 600px) {
+      body { padding: 1.5rem 1rem; }
+      h1 { font-size: 1.5rem; }
+      h2 { font-size: 1.2rem; }
+      .terminal, pre { font-size: 0.72rem; padding: 0.75rem; }
+      table { font-size: 0.8rem; }
+      th, td { padding: 0.4rem 0.6rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="platform">Dev.to</div>
+    <div class="tags">
+      <span class="tag">#mcp</span>
+      <span class="tag">#testing</span>
+      <span class="tag">#ai</span>
+      <span class="tag">#tooling</span>
+    </div>
+
+    <h1>How to Test Your MCP Server for Protocol Compliance</h1>
+    <p class="subtitle">A practical guide to automated compliance testing with MCP Doctor</p>
+
+    <p>MCP (Model Context Protocol) has become the standard way to connect AI assistants to external tools and data. With 97M+ SDK downloads per month and support in Claude, Cursor, Windsurf, and dozens of other clients, chances are you're either building or consuming MCP servers.</p>
+
+    <p>But here's the thing: <strong>nobody tests them</strong>.</p>
+
+    <p>Most MCP servers are built, manually checked against one client, and shipped. There's no test suite, no compliance check, no way to know if your server handles edge cases correctly until a user hits them in production.</p>
+
+    <p>I built <a href="https://github.com/parallelromb/mcpdoctor">MCP Doctor</a> to fix this.</p>
+
+    <hr class="divider">
+
+    <h2>The Problem</h2>
+
+    <p>The MCP specification defines a full JSON-RPC 2.0 protocol with specific requirements for:</p>
+    <ul>
+      <li>How servers must respond to the <span class="inline-code">initialize</span> handshake</li>
+      <li>What format <span class="inline-code">tools/list</span> and <span class="inline-code">tools/call</span> responses should follow</li>
+      <li>How errors must be reported (specific error codes, not just "something went wrong")</li>
+      <li>How resources and prompts should behave</li>
+      <li>Edge cases around malformed inputs, missing parameters, and timeouts</li>
+    </ul>
+
+    <p>In practice, most servers get the happy path right and skip everything else. This leads to:</p>
+    <ul>
+      <li><strong>Silent failures</strong> -- Claude calls a tool, gets a malformed response, retries 3 times, then gives up</li>
+      <li><strong>Client-specific bugs</strong> -- works in Claude Desktop but fails in Cursor because of a subtle difference in how they handle capabilities</li>
+      <li><strong>Security gaps</strong> -- no input validation, path traversal possible, no resource boundaries</li>
+    </ul>
+
+    <hr class="divider">
+
+    <h2>Enter MCP Doctor</h2>
+
+    <p>MCP Doctor is a free, open-source CLI that runs 50+ compliance checks against any MCP server. No install needed:</p>
+
+    <pre><code><span class="cmd">npx</span> mcpdoctor <span class="flag">--server</span> <span class="str">"node my-server.js"</span></code></pre>
+
+    <p>It connects to your server, runs every check, and gives you a detailed report with a letter grade.</p>
+
+    <hr class="divider">
+
+    <h2>What It Tests</h2>
+
+    <h3>1. Protocol Compliance</h3>
+    <p>The foundation. MCP Doctor tests whether your server correctly implements the MCP handshake and core protocol:</p>
+
+    <div class="terminal">
+      <span class="heading">  Protocol</span><br>
+      <span class="pass">    &#10003;</span> Initialize handshake completes<br>
+      <span class="pass">    &#10003;</span> Server returns valid capabilities object<br>
+      <span class="pass">    &#10003;</span> JSON-RPC 2.0 message format correct<br>
+      <span class="pass">    &#10003;</span> Capability negotiation follows spec<br>
+      <span class="pass">    &#10003;</span> Server info (name, version) present<br>
+      <span class="fail">    &#10007;</span> Shutdown handles gracefully <span class="warn">[WARN]</span>
+    </div>
+
+    <div class="common-failures">
+      <strong>Common failures:</strong> Missing serverInfo in initialize response. Capabilities object missing required fields. Not responding to ping requests.
+    </div>
+
+    <h3>2. Tools</h3>
+    <p>If your server exposes tools, MCP Doctor validates the full lifecycle:</p>
+
+    <div class="terminal">
+      <span class="heading">  Tools</span><br>
+      <span class="pass">    &#10003;</span> tools/list returns valid response<br>
+      <span class="pass">    &#10003;</span> Tool schemas are valid JSON Schema<br>
+      <span class="pass">    &#10003;</span> tools/call with valid input succeeds<br>
+      <span class="fail">    &#10007;</span> tools/call with invalid input returns proper error<br>
+      <span class="pass">    &#10003;</span> Tool names follow naming conventions<br>
+      <span class="pass">    &#10003;</span> Tool descriptions present and non-empty<br>
+      <span class="pass">    &#10003;</span> Required parameters enforced
+    </div>
+
+    <div class="common-failures">
+      <strong>Common failures:</strong> Tool input schemas that aren't valid JSON Schema. Not returning proper error objects when tools/call fails. Missing descriptions.
+    </div>
+
+    <h3>3. Resources</h3>
+    <div class="terminal">
+      <span class="heading">  Resources</span><br>
+      <span class="pass">    &#10003;</span> resources/list returns valid response<br>
+      <span class="pass">    &#10003;</span> resources/read returns content array<br>
+      <span class="pass">    &#10003;</span> URI format follows spec<br>
+      <span class="pass">    &#10003;</span> MIME types present and valid<br>
+      <span class="pass">    &#10003;</span> Resource templates resolve correctly
+    </div>
+
+    <div class="common-failures">
+      <strong>Common failures:</strong> URIs that don't follow scheme://path format. Missing MIME types. resources/read returning a string instead of a content array.
+    </div>
+
+    <h3>4. Prompts</h3>
+    <div class="terminal">
+      <span class="heading">  Prompts</span><br>
+      <span class="pass">    &#10003;</span> prompts/list returns valid response<br>
+      <span class="pass">    &#10003;</span> prompts/get returns messages array<br>
+      <span class="pass">    &#10003;</span> Required arguments enforced<br>
+      <span class="pass">    &#10003;</span> Argument descriptions present
+    </div>
+
+    <h3>5. Error Handling</h3>
+    <p>This is where most servers fail:</p>
+
+    <div class="terminal">
+      <span class="heading">  Error Handling</span><br>
+      <span class="pass">    &#10003;</span> Invalid method returns -32601 (MethodNotFound)<br>
+      <span class="fail">    &#10007;</span> Malformed JSON-RPC returns -32700 (ParseError)<br>
+      <span class="pass">    &#10003;</span> Invalid params returns -32602 (InvalidParams)<br>
+      <span class="pass">    &#10003;</span> Missing required params handled<br>
+      <span class="fail">    &#10007;</span> Oversized payload handled gracefully<br>
+      <span class="pass">    &#10003;</span> Concurrent requests don't cause race conditions
+    </div>
+
+    <div class="common-failures">
+      <strong>Common failures:</strong> Returning generic error messages instead of proper JSON-RPC error codes. Crashing on malformed input. Not handling concurrent requests safely.
+    </div>
+
+    <h3>6. Security</h3>
+    <div class="terminal">
+      <span class="heading">  Security</span><br>
+      <span class="pass">    &#10003;</span> Path traversal inputs rejected<br>
+      <span class="pass">    &#10003;</span> Input length limits enforced<br>
+      <span class="pass">    &#10003;</span> No sensitive data in error messages<br>
+      <span class="pass">    &#10003;</span> Resource access stays within boundaries
+    </div>
+
+    <hr class="divider">
+
+    <h2>Running MCP Doctor</h2>
+
+    <h3>Basic usage</h3>
+    <pre><code><span class="comment"># Test a stdio server (most common)</span>
+<span class="cmd">npx</span> mcpdoctor <span class="flag">--server</span> <span class="str">"node my-server.js"</span>
+
+<span class="comment"># Test a Python server</span>
+<span class="cmd">npx</span> mcpdoctor <span class="flag">--server</span> <span class="str">"python server.py"</span>
+
+<span class="comment"># Test an SSE server</span>
+<span class="cmd">npx</span> mcpdoctor <span class="flag">--url</span> <span class="str">http://localhost:3000/mcp</span> <span class="flag">--transport</span> sse</code></pre>
+
+    <h3>CI/CD Integration</h3>
+    <pre><code><span class="comment"># Fail CI if grade is below B</span>
+<span class="cmd">npx</span> mcpdoctor <span class="flag">--server</span> <span class="str">"node dist/server.js"</span> <span class="flag">--fail-under</span> B
+
+<span class="comment"># JSON output for parsing</span>
+<span class="cmd">npx</span> mcpdoctor <span class="flag">--server</span> <span class="str">"node dist/server.js"</span> <span class="flag">--format</span> json</code></pre>
+
+    <h3>GitHub Actions example</h3>
+    <pre><code><span class="kw">name:</span> MCP Compliance
+<span class="kw">on:</span> [push, pull_request]
+
+<span class="kw">jobs:</span>
+  <span class="kw">test:</span>
+    <span class="kw">runs-on:</span> ubuntu-latest
+    <span class="kw">steps:</span>
+      - <span class="kw">uses:</span> actions/checkout@v4
+      - <span class="kw">uses:</span> actions/setup-node@v4
+        <span class="kw">with:</span>
+          <span class="kw">node-version:</span> <span class="str">18</span>
+      - <span class="kw">run:</span> npm install
+      - <span class="kw">run:</span> npm run build
+      - <span class="kw">name:</span> MCP compliance check
+        <span class="kw">run:</span> npx mcpdoctor --server "node dist/server.js" --fail-under B</code></pre>
+
+    <h3>Interpreting the grades</h3>
+    <table>
+      <thead>
+        <tr><th>Grade</th><th>Meaning</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>A</strong></td><td>Full compliance. All critical checks pass, minor warnings only.</td></tr>
+        <tr><td><strong>B</strong></td><td>Good compliance. A few non-critical checks fail. Safe for production.</td></tr>
+        <tr><td><strong>C</strong></td><td>Partial compliance. Some error handling or edge cases missing.</td></tr>
+        <tr><td><strong>D</strong></td><td>Significant issues. Core protocol works but many checks fail.</td></tr>
+        <tr><td><strong>F</strong></td><td>Major failures. Protocol handshake or core functionality broken.</td></tr>
+      </tbody>
+    </table>
+
+    <hr class="divider">
+
+    <h2>Real-World Example</h2>
+
+    <p>Let's say you've built a simple MCP server that exposes a <span class="inline-code">get_weather</span> tool:</p>
+
+    <pre><code><span class="comment">// weather-server.ts</span>
+<span class="kw">import</span> { Server } <span class="kw">from</span> <span class="str">"@modelcontextprotocol/sdk/server/index.js"</span>;
+<span class="kw">import</span> { StdioServerTransport } <span class="kw">from</span> <span class="str">"@modelcontextprotocol/sdk/server/stdio.js"</span>;
+
+<span class="kw">const</span> server = <span class="kw">new</span> <span class="type">Server</span>({
+  name: <span class="str">"weather-server"</span>,
+  version: <span class="str">"1.0.0"</span>
+}, {
+  capabilities: { tools: {} }
+});
+
+<span class="comment">// ... handler registration</span>
+
+<span class="kw">const</span> transport = <span class="kw">new</span> <span class="type">StdioServerTransport</span>();
+<span class="kw">await</span> server.connect(transport);</code></pre>
+
+    <p>Running MCP Doctor against this:</p>
+
+    <div class="terminal">
+      <div class="terminal-header">
+        <div class="terminal-dot dot-red"></div>
+        <div class="terminal-dot dot-yellow"></div>
+        <div class="terminal-dot dot-green"></div>
+      </div>
+      <span class="prompt">$</span> npx mcpdoctor --server "npx tsx weather-server.ts"<br><br>
+      <span class="dim">  MCP Doctor v1.0.0</span><br>
+      <span class="dim">  Testing: npx tsx weather-server.ts</span><br><br>
+      <span class="dim">  Score:</span> <strong style="color:#fff">44/53</strong> checks passed<br>
+      <span class="dim">  Grade:</span> <span class="grade">B+</span><br><br>
+      <span class="dim">  Issues:</span><br>
+      <span class="fail">  - tools/call does not return proper error for invalid input</span><br>
+      <span class="fail">  - Shutdown not handled gracefully</span><br>
+      <span class="fail">  - No resources capability declared but resources/list not rejected</span>
+    </div>
+
+    <p>Now you know exactly what to fix before shipping.</p>
+
+    <hr class="divider">
+
+    <h2>What MCP Doctor Is Not</h2>
+
+    <ul>
+      <li><strong>Not a linter</strong> -- it doesn't check your code style or tool descriptions for quality. It tests actual protocol behavior by connecting to your running server.</li>
+      <li><strong>Not a monitor</strong> -- it runs once and gives you a report. It's a test tool, not an observability platform.</li>
+      <li><strong>Not client-specific</strong> -- it tests against the MCP spec, not against how a specific client implements MCP.</li>
+    </ul>
+
+    <div class="cta-box">
+      <h2 style="margin: 0 0 0.5rem; padding: 0;">Getting Started</h2>
+      <p style="color: #7a7a8a;">No signup, no API key, no config file.</p>
+      <pre><code><span class="cmd">npx</span> mcpdoctor <span class="flag">--server</span> <span class="str">"node your-server.js"</span></code></pre>
+      <p>
+        <a href="https://github.com/parallelromb/mcpdoctor">GitHub</a> &nbsp;|&nbsp;
+        <a href="https://mcpdoctor.ai">mcpdoctor.ai</a> &nbsp;|&nbsp;
+        <span style="color: #6a6a7a;">MIT License</span>
+      </p>
+    </div>
+
+    <p>If you're building MCP servers, I'd love your feedback on which checks matter most and what's missing. Open an issue or drop a comment below.</p>
+
+    <div class="footer">
+      <a href="https://github.com/parallelromb/mcpdoctor">GitHub</a> &middot;
+      <a href="https://mcpdoctor.ai">mcpdoctor.ai</a> &middot;
+      MIT License &middot; Free &amp; Open Source
+    </div>
+  </div>
+</body>
+</html>

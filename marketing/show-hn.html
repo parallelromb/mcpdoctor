@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Show HN: MCP Doctor - Compliance Testing CLI for MCP Servers</title>
+  <meta property="og:title" content="Show HN: MCP Doctor - Compliance Testing CLI for MCP Servers">
+  <meta property="og:description" content="Free CLI that runs 50+ compliance checks against any MCP server. npx mcpdoctor. MIT licensed.">
+  <meta property="og:url" content="https://mcpdoctor.ai">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="MCP Doctor - Compliance Testing for MCP Servers">
+  <meta name="twitter:description" content="50+ automated checks. A-F grading. npx mcpdoctor.">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0f;
+      color: #e0e0e8;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+      line-height: 1.7;
+      padding: 2rem 1rem;
+    }
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(0, 212, 170, 0.1);
+      border: 1px solid rgba(0, 212, 170, 0.3);
+      color: #00d4aa;
+      padding: 0.25rem 0.75rem;
+      border-radius: 100px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 1.5rem;
+      line-height: 1.3;
+    }
+    h1 span { color: #00d4aa; }
+    h2 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #ffffff;
+      margin: 2rem 0 0.75rem;
+    }
+    p { margin-bottom: 1rem; color: #b0b0be; }
+    a { color: #00d4aa; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul {
+      margin: 0.5rem 0 1rem 1.5rem;
+      color: #b0b0be;
+    }
+    li { margin-bottom: 0.4rem; }
+    li strong { color: #e0e0e8; }
+    pre {
+      background: #12121a;
+      border: 1px solid #1e1e2e;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      overflow-x: auto;
+      margin: 1rem 0;
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+    code {
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      color: #c8c8d8;
+    }
+    .cmd { color: #00d4aa; }
+    .flag { color: #7aa2f7; }
+    .str { color: #e0af68; }
+    .cmt { color: #565670; }
+    .accent { color: #00d4aa; }
+    .footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #1e1e2e;
+      color: #6a6a7a;
+      font-size: 0.85rem;
+    }
+    .footer a { color: #00d4aa; }
+    @media (max-width: 600px) {
+      body { padding: 1.5rem 1rem; }
+      h1 { font-size: 1.4rem; }
+      pre { font-size: 0.78rem; padding: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="badge">Show HN</div>
+
+    <h1><span>MCP Doctor</span> -- Compliance testing CLI for MCP servers (npx mcpdoctor)</h1>
+
+    <p>I built <strong style="color:#fff">MCP Doctor</strong>, a free CLI tool that runs 50+ compliance checks against any MCP (Model Context Protocol) server and gives it a grade from A to F.</p>
+
+    <h2>Why I built it</h2>
+    <p>MCP has exploded -- 97M+ SDK downloads/month, thousands of servers listed on directories, and every AI IDE now supports it. But there's no standard way to test whether an MCP server actually implements the protocol correctly.</p>
+    <p>I've been building MCP servers for my own projects and kept running into the same issues: tools returning malformed JSON, missing error codes, resources not following the spec, initialize handshakes failing silently. Every time I plugged a new community server into Claude or Cursor, I had to debug these manually.</p>
+
+    <h2>What it checks</h2>
+    <p>MCP Doctor tests 6 categories:</p>
+    <ul>
+      <li><strong>Protocol</strong> -- initialize handshake, capability negotiation, JSON-RPC compliance</li>
+      <li><strong>Tools</strong> -- tools/list response format, tools/call with valid and invalid inputs, schema validation</li>
+      <li><strong>Resources</strong> -- resources/list, resources/read, URI format compliance</li>
+      <li><strong>Prompts</strong> -- prompts/list, prompts/get, argument handling</li>
+      <li><strong>Error handling</strong> -- proper error codes, graceful failure on bad inputs, timeout behavior</li>
+      <li><strong>Security</strong> -- input sanitization, path traversal checks, resource access boundaries</li>
+    </ul>
+
+    <h2>How to try it</h2>
+    <pre><code><span class="cmd">npx</span> mcpdoctor <span class="flag">--server</span> <span class="str">"node my-server.js"</span>
+<span class="cmd">npx</span> mcpdoctor <span class="flag">--server</span> <span class="str">"python server.py"</span> <span class="flag">--transport</span> stdio
+<span class="cmd">npx</span> mcpdoctor <span class="flag">--url</span> <span class="str">http://localhost:3000/mcp</span> <span class="flag">--transport</span> sse</code></pre>
+    <p>No install, no config, no account needed.</p>
+
+    <h2>Details</h2>
+    <ul>
+      <li>MIT licensed: <a href="https://github.com/parallelromb/mcpdoctor">github.com/parallelromb/mcpdoctor</a></li>
+      <li>Website: <a href="https://mcpdoctor.ai">mcpdoctor.ai</a></li>
+      <li>TypeScript, runs on Node 18+</li>
+      <li>CI/CD friendly -- exits with non-zero code on failure, supports JSON output</li>
+    </ul>
+
+    <p>I'm not aware of any other tool that does actual protocol compliance testing for MCP. There's destilabs/mcp-doctor which lints tool descriptions, and the official MCP Inspector for interactive debugging, but nothing that runs a full automated test suite against the spec.</p>
+
+    <p><strong style="color:#fff">Feedback welcome</strong> -- especially on which checks matter most to you and what I'm missing.</p>
+
+    <div class="footer">
+      <a href="https://github.com/parallelromb/mcpdoctor">GitHub</a> &middot;
+      <a href="https://mcpdoctor.ai">mcpdoctor.ai</a> &middot;
+      MIT License
+    </div>
+  </div>
+</body>
+</html>
