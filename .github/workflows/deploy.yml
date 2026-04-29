@@ -5,23 +5,10 @@ on:
     branches: [main]
 
 jobs:
-  deploy-api:
-    name: Deploy API to Railway
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
-
-      - name: Deploy to Railway
-        run: railway up --service mcpdoctor-api -d
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-
   deploy-site:
     name: Deploy Site to Cloudflare Pages
     runs-on: ubuntu-latest
+    if: ${{ vars.DEPLOY_ENABLED == 'true' }}
     steps:
       - uses: actions/checkout@v4
 
